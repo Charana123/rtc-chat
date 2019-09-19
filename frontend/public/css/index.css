@@ -1,5 +1,26 @@
+/* Global */
+* {
+    padding: 0px !important;
+    margin: 0px !important;
+    font-size: 14px;
+}
+
+.img {
+    height: 60px;
+    width: 60px;
+    max-height: 60px;
+    max-width: 60px;
+}
+
+.main-container {
+    min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+    min-height: 100vh; /* These two lines are counted as one :-)       */
+}
+
+/* ========= search-bar.jsx =============== */
+/* SearchBar */
 .has-search .form-control {
-    padding-left: 2.375rem;
+    padding-left: 2.375rem !important;
 }
 .has-search .form-control-feedback {
     position: absolute;
@@ -12,3 +33,16 @@
     pointer-events: none;
     color: #aaa;
 }
+
+/* ========= chat.jsx ====================== */
+/* ChatPane */
+.flex-grow-1 {
+    -ms-flex-positive: 1 !important;
+    flex-grow: 1 !important;
+}
+
+/* ChatMessage
+.chat-message {
+    max-height: 150px;
+    height: 150px;
+} */
