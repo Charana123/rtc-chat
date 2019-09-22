@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
@@ -11,9 +12,14 @@ type DDBClient struct {
 	GSIName   string
 }
 
-func NewDDBClient(svc *dynamodb.DynamoDB) *DDBClient {
+func NewDDBClient() *DDBClient {
+	sess := session.Must(session.NewSessionWithOptions(
+		session.Options{
+			SharedConfigState: session.SharedConfigEnable,
+		},
+	))
 	return &DDBClient{
-		svc:       svc,
+		svc:       dynamodb.New(sess),
 		TableName: "RTCChat",
 		GSIName:   "reverseGSI",
 	}
@@ -124,6 +130,29 @@ func (ddb *DDBClient) SubscribeUserToChannel(connectionID string, channelID stri
 	}
 	_, err := ddb.svc.PutItem(input)
 	return err
+}
+
+func (ddb *DDBClient) ListSubscribersToChannel(channelID string) ([]string, error) {
+	input := &dynamodb.QueryInput{
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":pk": {
+				S: aws.String(channelID),
+			},
+		},
+		KeyConditionExpression: aws.String("pk = :pk"),
+		TableName:              aws.String(ddb.TableName),
+	}
+	output, err := ddb.svc.Query(input)
+	if err != nil {
+		return nil, err
+	}
+	connectionIDs := make([]string, 0)
+	for _, item := range output.Items {
+		if *item["sk"].S != "info" {
+			connectionIDs = append(connectionIDs, *item["sk"].S)
+		}
+	}
+	return connectionIDs, nil
 }
 
 // UserConnected subscribed a user to all channels

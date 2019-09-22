@@ -16,12 +16,17 @@ provider:
       Action:
        - dynamodb:*
       Resource:
-       - Fn::GetAtt: [RTCChat, Arn]
+       - Fn::GetAtt: [RTCChatDDB, Arn]
        - Fn::Join:
          - "/"
          -
-           - Fn::GetAtt: [RTCChat, Arn]
+           - Fn::GetAtt: [RTCChatDDB, Arn]
            - "index/*"
+    - Effect: "Allow"
+      Action:
+       - sns:*
+      Resource:
+       - Ref: RTCChatSNS
 
 # Serverless deploy
 package:
@@ -49,26 +54,31 @@ functions:
     events:
       - websocket:
           route: listChannels
-  # subscribeChannel:
-  #   handler: bin/subscribe-channel
-  #   events:
-  #     - websocket:
-  #         route: subscribeChannel
-  # sendMessage:
-  #   handler: bin/send-message
-  #   events:
-  #     - websocket:
-  #         route: sendMessage
-  # broadcastMessage:
-  #   handler: bin/broadcast-message
-  #   events:
-  #     - websocket:
-  #         route: broadcastMessage
+  subscribeChannel:
+    handler: bin/subscribe-channel
+    events:
+      - websocket:
+          route: subscribeChannel
+  sendMessage:
+    handler: bin/send-message
+    events:
+      - websocket:
+          route: sendMessage
+  broadcastMessage:
+    handler: bin/broadcast-message
+    events:
+      - sns:
+          arn: !Ref RTCChatSNS
+          topicName: MessageTopic
 
 # Other serverless resources (e.g. S3, DynamoDB)
 resources:
   Resources:
-      RTCChat:
+      RTCChatSNS:
+        Type: AWS::SNS::Topic
+        Properties:
+          TopicName: MessageTopic
+      RTCChatDDB:
         Type: AWS::DynamoDB::Table
         Properties:
           TableName: RTCChat

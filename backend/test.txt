@@ -1,0 +1,4 @@
+{"action":"subscribeChannel","ChannelID":"channel1"}
+ChannelID - Aawbtf92oAMAdzQ=
+{"action":"sendMessage","Message":"{\"ChannelID\":\"channel1\",\"Message\":\"hello world\"}"}
+{"action":"createChannel","ChannelID":"channel1"}

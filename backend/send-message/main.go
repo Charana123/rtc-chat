@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	utils "github.com/Charana123/rtc-chat/backend/utils"
 	"github.com/aws/aws-lambda-go/events"
@@ -10,23 +10,30 @@ import (
 )
 
 var (
-	ddbClient *utils.DDBClient
+	snsClient *utils.SNSClient
 )
 
 func init() {
-	ddbClient = utils.NewDDBClient()
+	snsClient = utils.NewSNSClient()
+}
+
+type SendMessage struct {
+	Message string `json:"Message"`
 }
 
 func Handler(ctx context.Context, req events.APIGatewayWebsocketProxyRequest) (events.APIGatewayProxyResponse, error) {
 
-	items, err := ddbClient.ListChannels()
+	data := &SendMessage{}
+	err := json.Unmarshal([]byte(req.Body), &data)
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: 400}, err
 	}
-	fmt.Println(items)
-	return utils.ConstructResponse(200, map[string]interface{}{
-		"channels": items,
-	})
+	// check if channel already exists
+	err = snsClient.SendMessage(data.Message)
+	if err != nil {
+		return events.APIGatewayProxyResponse{StatusCode: 400}, err
+	}
+	return events.APIGatewayProxyResponse{StatusCode: 200}, nil
 }
 
 func main() {
