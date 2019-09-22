@@ -31,7 +31,7 @@ func NewAPIGateway() *APIGateway {
 	}
 }
 
-func (apic *APIGateway) SendMessageToClient(connectionID string, message string) error {
+func (apic *APIGateway) SendMessageToClient(connectionID string, message interface{}) error {
 	body, err := json.Marshal(map[string]interface{}{
 		"message": message,
 	})

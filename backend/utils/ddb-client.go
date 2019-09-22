@@ -89,7 +89,7 @@ func (ddb *DDBClient) CheckChannelExists(channelID string) (bool, error) {
 }
 
 // ListChannels retrieves all channel info items (i.e. {sk: info}) in the reverse GSI
-func (ddb *DDBClient) ListChannels() ([]string, error) {
+func (ddb *DDBClient) ListChannels(filterPrefix string) ([]string, error) {
 	input := &dynamodb.QueryInput{
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":sk": {
@@ -101,6 +101,14 @@ func (ddb *DDBClient) ListChannels() ([]string, error) {
 		IndexName:              aws.String(ddb.GSIName),
 		TableName:              aws.String(ddb.TableName),
 	}
+	if filterPrefix != "" {
+		input.ExpressionAttributeValues[":pkPrefix"] = &dynamodb.AttributeValue{
+			S: aws.String(filterPrefix),
+		}
+		input.KeyConditionExpression = aws.String("sk = :sk and begins_with(pk, :pkPrefix)")
+	}
+	// if filterPrefix
+	// input.KeyConditionExpression = aws.String("")
 	output, err := ddb.svc.Query(input)
 	if err != nil {
 		return nil, err

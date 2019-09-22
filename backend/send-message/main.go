@@ -24,7 +24,7 @@ type SendMessage struct {
 func Handler(ctx context.Context, req events.APIGatewayWebsocketProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	data := &SendMessage{}
-	err := json.Unmarshal([]byte(req.Body), &data)
+	err := json.Unmarshal([]byte(req.Body), data)
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: 400}, err
 	}
